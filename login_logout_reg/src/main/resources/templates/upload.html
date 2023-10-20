@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration and Login System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<style>
+    /* Your existing CSS styles here */
+</style>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="header">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/}">Registration and Login System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
+<br/>
+<br/>
+
+<form method="POST" enctype="multipart/form-data" id="fileUploadForm">
+    <label for="file1">Upload File:</label>
+    <div id="additionalFiles"></div>
+
+    <input id="fileupload" type="file" name="files" multiple="multiple"/>
+    <br>
+    
+    <button id="upload-button" class="button button4" type="button" onclick="uploadFile()">Upload</button>
+    <button class="button button4" type="button" onclick="addFileInput()">Upload Another File</button>
+<p id="fileCount">Files Uploaded: 0</p>
+</form>
+
+<!-- Display the link to the merged file -->
+<!--<div id="mergedFileLink" style="display: none;">
+    <p>Merged File: <a id="downloadLink" href="/downloadMergedFile" target="_blank" download>Download Merged File</a></p>
+</div>-->
+<div id="mergedFileLink" style="display: none;">
+    <p>Merged File: <a id="downloadLink" href="/downloadMergedFile" >Download Merged File</a></p>
+</div>
+
+<script>
+    let fileCount = 1;
+ function addFileInput() {
+        const form = document.getElementById("fileUploadForm");
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.name = "files";
+        fileInput.id = "file" + (++fileCount);
+        fileInput.style.display = "block";
+        
+        // Display "No files selected" for the first upload input
+        if (fileCount === 1) {
+            fileInput.addEventListener('change', function () {
+                if (this.files.length === 0) {
+                    this.nextElementSibling.textContent = "No files selected";
+                } else {
+                    this.nextElementSibling.textContent = "";
+                }
+            });
+        }
+        
+        form.insertBefore(fileInput, document.getElementById("upload-button"));
+        updateFileCount(); // Update the file count
+    }
+    
+
+    async function uploadFile() {
+        let formData = new FormData();
+        const fileInputs = document.querySelectorAll('input[type="file"][name="files"]');
+
+        for (const fileInput of fileInputs) {
+            for (const file of fileInput.files) {
+                formData.append("files", file);
+            }
+        }
+
+        let response = await fetch('/upload', {
+            method: "POST",
+            body: formData
+        });
+
+        if (response.status == 200) {
+			alert("Files successfully uploaded.");
+            // Show the merged file link
+            const mergedFileLink = document.getElementById("mergedFileLink");
+            mergedFileLink.style.display = "block";
+            
+            // Set the download link for the merged file
+           //const downloadLink = document.getElementById("downloadLink")
+           //downloadLink.href = 'http://localhost:5051/downloadMergedFile/mergedFile.csv'; // Update with the correct URL for your merged file
+        }
+
+        updateFileCount(); // Update the file count
+    }
+    
+   
+
+    function updateFileCount() {
+        document.getElementById("fileCount").textContent = "Files Uploaded: " + fileCount;
+    }
+</script>
+</body>
+</html>
